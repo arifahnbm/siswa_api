@@ -100,7 +100,7 @@ class SiswaController extends Controller
         try {
             $siswa = Siswa::findOrFail($id);
             $siswa->delete();
-            return response()-json(null, 204);
+            return response()->json(null, 204);
         } catch (\Exception $e) {
             Log::error('Error: ' . $e->getMessage());
             return response()->json(['error' => 'Gagal menghapus data siswa.'], 500);
