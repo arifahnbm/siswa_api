@@ -36,14 +36,19 @@ class SiswaController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'nama' => 'required|string|max:255',
-            'kelas' => 'required|string|max:10',
-            'umur' => 'required|integer',
+            'nama' => ['required', 'regex:/^[A-Za-z\s]+$/', 'max:255'], // Hanya huruf dan spasi
+            'kelas' => ['required', 'regex:/^[X|XI|XII]{1,3}[A-Z]{3}[0-9]+$/'], // Format "XIIIPA1"
+            'umur' => ['required', 'integer', 'between:6,18'], // Rentang umur
         ]);
 
         try {
             $siswa = Siswa::create ($validatedData);
             return response()->json($siswa, 201);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'error' => 'Validasi gagal',
+                'messages' => $e->errors(),
+            ], 422);
         } catch (\Exception $e) {
             Log::error('Error: ' . $e->getMessage());
             return response()->json(['error' => 'Gagal menyimpan data siswa.'], 500);
@@ -79,13 +84,18 @@ class SiswaController extends Controller
         try {
             $siswa = Siswa::findOrFail($id);
             $validatedData = $request->validate([
-                'nama' => 'sometimes|required|string|max:255',
-                'kelas' => 'sometimes|required|string|max:10',
-                'umur' => 'sometimes|required|integer',
-            ]);
+                'nama' => ['sometimes', 'required', 'regex:/^[A-Za-z\s]+$/', 'max:255'], // Hanya huruf dan spasi
+                'kelas' => ['sometimes', 'required', 'regex:/^[X|XI|XII]{1,3}[A-Z]{3}[0-9]+$/'], // Format "XIIIPA1"
+                'umur' => ['sometimes', 'required', 'integer', 'between:6,18'], // Rentang umur
+            ]);
 
             $siswa->update($validatedData);
             return response()->json($siswa);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'error' => 'Validasi gagal',
+                'messages' => $e->errors(),
+            ], 422);
         } catch (\Exception $e) {
             Log::error('Error: ' . $e->getMessage());
             return response()->json(['error' => 'Gagal memperbarui data siswa.'], 500);
